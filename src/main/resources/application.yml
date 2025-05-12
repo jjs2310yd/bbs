@@ -20,5 +20,8 @@ logging:
   level:
     root: info
 
-
-
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false

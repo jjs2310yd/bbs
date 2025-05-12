@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>게시글 보기</title></head>
+<body>
+<h2 th:text="${board.title}"></h2>
+<p>작성자: <span th:text="${board.writer}"></span></p>
+<p>작성일: <span th:text="${board.createdAt}"></span></p>
+<p th:text="${board.content}"></p>
+
+<a th:href="@{'/board/' + ${board.boardId} + '/edit'}">수정</a>
+<form th:action="@{'/board/' + ${board.boardId} + '/delete'}" method="post">
+  <button type="submit">삭제</button>
+</form>
+<a th:href="@{/board}">목록</a>
+</body>
+</html>

@@ -38,3 +38,7 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+bootJar{ archivesBaseName = 'bbs'
+	archiveFileName = 'bbs.jar'
+	archiveVersion = '1.0.0'
+}

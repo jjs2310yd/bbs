@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>게시판 목록</title>
+</head>
+<body>
+<h2>게시판 목록</h2>
+<a th:href="@{/board/add}">글쓰기</a>
+<table border="1">
+  <tr><th>번호</th><th>제목</th><th>작성자</th></tr>
+  <tr th:each="board : ${boards}">
+    <td th:text="${board.boardId}">1</td>
+    <td>
+      <a th:href="@{'/board/' + ${board.boardId}}"
+         th:text="${board.title}">제목</a>
+    </td>
+    <td th:text="${board.writer}">작성자</td>
+  </tr>
+</table>
+</body>
+</html>

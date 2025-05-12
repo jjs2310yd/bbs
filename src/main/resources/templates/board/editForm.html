@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>글쓰기</title></head>
+<body>
+<h2>글쓰기</h2>
+<form th:action="@{${#strings.contains(#httpServletRequest.requestURI, 'edit') ? '/board/' + ${board.boardId} + '/edit' : '/board/add'}}" method="post">
+  <label>제목: <input type="text" name="title" th:value="${board.title}"/></label><br/>
+  <label>작성자: <input type="text" name="writer" th:value="${board.writer}"/></label><br/>
+  <label>내용:<br/><textarea name="content" rows="5" cols="30" th:text="${board.content}"></textarea></label><br/>
+  <button type="submit">저장</button>
+</form>
+<a th:href="@{/board}">목록</a>
+</body>
+</html>
