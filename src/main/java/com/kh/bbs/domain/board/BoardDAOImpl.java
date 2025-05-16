@@ -26,7 +26,10 @@ public class BoardDAOImpl implements com.kh.bbs.domain.board.DAO {
       board.setTitle(rs.getString("title"));
       board.setContent(rs.getString("content"));
       board.setWriter(rs.getString("writer"));
-      board.setCreatedAt(rs.getString("created_at"));
+      board.setCreatedAt(rs.getTimestamp("created_at") != null ?
+          rs.getTimestamp("created_at").toLocalDateTime() : null);
+      board.setUpdatedAt(rs.getTimestamp("updated_at") != null ?
+          rs.getTimestamp("updated_at").toLocalDateTime() : null);
       return board;
     };
   }
@@ -39,23 +42,25 @@ public class BoardDAOImpl implements com.kh.bbs.domain.board.DAO {
     KeyHolder keyHolder = new GeneratedKeyHolder();
     template.update(sql, param, keyHolder, new String[]{"board_id"});
 
-    Number key = keyHolder.getKeys() != null ? (Number) keyHolder.getKeys().get("board_id") : null;
+    Number key = keyHolder.getKey(); // getKey() 사용
     if (key == null) {
-      throw new IllegalStateException("게시글 번호를 생성할 수 없습니다.");
+      log.error("Failed to retrieve generated key for board."); // 로그 추가
+      throw new IllegalStateException("Failed to retrieve generated key for board.");
     }
     return key.longValue();
   }
 
+
   @Override
   public List<Board> findAll() {
-    String sql = "SELECT board_id, title, content, writer, created_at " +
+    String sql = "SELECT board_id, title, content, writer, created_at, updated_at " +
         "FROM board ORDER BY board_id DESC";
     return template.query(sql, boardRowMapper());
   }
 
   @Override
   public Board findById(Long boardId) {
-    String sql = "SELECT board_id, title, content, writer, created_at " +
+    String sql = "SELECT board_id, title, content, writer, created_at, updated_at  " +
         "FROM board WHERE board_id = :boardId";
     SqlParameterSource param = new MapSqlParameterSource("boardId", boardId);
     return template.queryForObject(sql, param, boardRowMapper());
@@ -78,5 +83,21 @@ public class BoardDAOImpl implements com.kh.bbs.domain.board.DAO {
     String sql = "DELETE FROM board WHERE board_id = :boardId";
     SqlParameterSource param = new MapSqlParameterSource("boardId", boardId);
     return template.update(sql, param);
+
   }
+  @Override
+  public List<Board> searchByKeyword(String keyword) {
+    String sql = "SELECT * FROM board " +
+        "WHERE LOWER(title) LIKE LOWER(:keyword) " +
+        "   OR LOWER(content) LIKE LOWER(:keyword) " +
+        "   OR LOWER(writer) LIKE LOWER(:keyword) " +
+        "ORDER BY board_id DESC";
+
+    SqlParameterSource param = new MapSqlParameterSource()
+        .addValue("keyword", "%" + keyword + "%");
+
+    return template.query(sql, param, boardRowMapper());
+  }
+
+
 }

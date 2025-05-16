@@ -1,35 +1,242 @@
 <!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>#[[$Title$]]#</title>
+  <title>새 글 작성</title>
+  <style>
+    /* 기존 폼 스타일 유지 (필요하면 추가) */
+    body {
+        font-family: 'Arial', sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        background-color: #f4f4f4; /* 배경색 추가 */
+        display: flex; /* 컨텐츠 중앙 정렬 위해 flex 사용 */
+        justify-content: center;
+        align-items: flex-start; /* 상단 정렬 */
+        min-height: 100vh;
+    }
+    .container { /* 폼을 감싸는 컨테이너 추가 */
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px; /* 폼 최대 너비 제한 */
+    }
+    h2 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 25px;
+    }
+    form div { /* 각 입력 필드 그룹에 margin-bottom 추가 */
+        margin-bottom: 15px;
+    }
+    label {
+        display: block; /* 라벨을 블록 요소로 만들어 줄바꿈 */
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+    }
+    input[type="text"],
+    textarea {
+        width: calc(100% - 22px); /* 패딩과 보더 고려해서 너비 조정 */
+        padding: 10px;
+        box-sizing: border-box; /* 패딩과 보더를 너비 계산에 포함 */
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem; /* 글자 크기 키움 */
+    }
+    textarea {
+        resize: vertical; /* 세로 크기만 조절 가능 */
+        min-height: 150px; /* 최소 높이 설정 */
+    }
+     /* HTML5 유효성 검사 실패 시 스타일 (브라우저마다 다를 수 있음) */
+     input:invalid, textarea:invalid {
+         border-color: red; /* 유효하지 않은 필드 테두리를 빨갛게 */
+     }
+     /* 에러 메시지 스타일 (컨트롤러에서 유효성 검사 시 사용) */
+    .error-message {
+        color: red;
+        font-size: 0.9em;
+        margin-top: 5px;
+        display: block; /* 에러 메시지도 줄바꿈 */
+    }
+    button[type="button"], /* 버튼 타입 변경 */
+    button[type="submit"] {
+         display: block; /* 버튼을 블록 요소로 */
+        width: 100%; /* 너비 100% */
+        padding: 12px;
+        background-color: #5cb85c; /* 초록색 계열 */
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: background-color 0.3s ease; /* 호버 효과 부드럽게 */
+    }
+    button[type="button"]:hover,
+    button[type="submit"]:hover {
+         background-color: #4cae4c; /* 진한 초록색 */
+    }
+     .link-back { /* 목록으로 링크 스타일 개선 */
+        display: block; /* 링크를 블록 요소로 */
+        text-align: center; /* 텍스트 중앙 정렬 */
+        margin-top: 20px;
+        color: #555; /* 회색 */
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    .link-back:hover {
+        color: #333;
+    }
+
+
+    /* ====== 팝업(모달) 스타일 ====== */
+    /* 팝업 배경 (화면 전체를 덮고 어둡게) */
+    .modal-overlay {
+        position: fixed; /* 화면에 고정 */
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(0, 0, 0, 0.6); /* 검은색에 투명도 */
+        display: flex; /* 내용을 가운데 정렬하기 위해 flex 사용 */
+        justify-content: center; /* 가로 중앙 정렬 */
+        align-items: center; /* 세로 중앙 정렬 */
+        z-index: 1000; /* 다른 요소들보다 위에 오도록 */
+        visibility: hidden; /* 처음에는 숨겨두기 */
+        opacity: 0; /* 투명하게 시작 */
+        transition: opacity 0.3s ease; /* 나타날 때 부드럽게 */
+    }
+
+    /* 팝업 배경이 보일 때 */
+    .modal-overlay.visible {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    /* 팝업 내용 박스 */
+    .modal-content {
+        background-color: #fff; /* 흰색 배경 */
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        text-align: center; /* 내용 중앙 정렬 */
+        max-width: 400px; /* 최대 너비 설정 */
+        width: 90%; /* 반응형 너비 */
+    }
+
+    /* 팝업 메시지 스타일 */
+    .modal-message {
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+        color: #333;
+    }
+
+    /* 팝업 버튼 그룹 */
+    .modal-buttons {
+        display: flex; /* 버튼들을 나란히 */
+        justify-content: center; /* 버튼 그룹 중앙 정렬 */
+        gap: 15px; /* 버튼 사이 간격 */
+    }
+
+    /* 팝업 버튼 스타일 */
+    .modal-buttons button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
+    }
+
+    /* 확인 버튼 스타일 */
+    .modal-buttons .confirm-button {
+        background-color: #007bff; /* 파란색 */
+        color: white;
+    }
+    .modal-buttons .confirm-button:hover {
+        background-color: #0056b3;
+    }
+
+    /* 취소 버튼 스타일 */
+    .modal-buttons .cancel-button {
+        background-color: #6c757d; /* 회색 */
+        color: white;
+    }
+    .modal-buttons .cancel-button:hover {
+        background-color: #5a6268;
+    }
+
+  </style>
 </head>
 <body>
 
-<h2>게시글 작성</h2>
+<!-- 폼을 감싸는 div 추가 -->
+<div class="container">
 
-<form th:action="@{/board/add}" method="post" th:object="${board}">
-  <label>제목:
-    <input type="text" th:field="*{title}" placeholder="제목을 입력하세요"/>
-  </label>
-  <br/>
+  <h2>게시글 작성</h2>
 
-  <label>작성자:
-    <input type="text" th:field="*{writer}" placeholder="작성자를 입력하세요"/>
-  </label>
-  <br/>
+  <!-- 폼에 ID 추가, th:object="${board}" 그대로 사용 -->
+  <form id="boardForm" th:action="@{/board/add}" method="post" th:object="${board}">
 
-  <label>내용:<br/>
-    <textarea th:field="*{content}" rows="6" cols="50" placeholder="내용을 입력하세요"></textarea>
-  </label>
-  <br/>
+    <!-- 각 입력 필드를 div로 감싸고 label 연결 -->
+    <div>
+      <label for="title">제목:</label>
+      <!-- th:field 사용, ID, placeholder, required 추가 -->
+      <input type="text" id="title" th:field="*{title}" placeholder="제목을 입력하세요" required/>
+      <!-- 유효성 검사 에러 메시지 표시! -->
+      <!-- 컨트롤러에서 @Valid로 넘어온 에러가 있으면 여기에 표시돼 -->
+      <span th:errors="*{title}" class="error-message"></span>
+    </div>
 
-  <button type="submit">등록</button>
-</form>
+    <div>
+      <label for="writer">작성자:</label>
+      <!-- th:field 사용, ID, placeholder, required 추가 -->
+      <input type="text" id="writer" th:field="*{writer}" placeholder="작성자를 입력하세요" required/>
+      <!-- 유효성 검사 에러 메시지 표시! -->
+      <span th:errors="*{writer}" class="error-message"></span>
+    </div>
 
-<a th:href="@{/board}">목록으로</a>
+    <div>
+      <label for="content">내용:</label><br/>
+      <!-- th:field 사용, ID, placeholder, required 추가 -->
+      <textarea id="content" th:field="*{content}" rows="6" cols="50" placeholder="내용을 입력하세요" required></textarea>
+      <!-- 유효성 검사 에러 메시지 표시! -->
+      <span th:errors="*{content}" class="error-message"></span>
+    </div>
+
+    <!-- DB 저장 중 발생한 에러 메시지 표시 (컨트롤러에서 model.addAttribute("errorMessage", ...)) -->
+    <div>
+      <div th:if="${errorMessage}">
+        <p th:text="${errorMessage}" class="error-message"></p>
+      </div>
+    </div>
+
+    <div>
+      <!-- 버튼 타입을 button으로 변경하고 ID 추가 (팝업창 사용 시) -->
+      <button type="button" id="submitBtn">등록</button> <!-- 👈 type="button" 및 id="submitBtn" 변경! -->
+    </div>
+  </form>
+
+  <a th:href="@{/board}">목록으로 돌아가기</a>
+
+</div> <!-- .container 끝 -->
+
+
+<!-- ====== 팝업(모달) HTML 구조 ====== -->
+<div id="confirmModal" class="modal-overlay">
+  <div class="modal-content">
+    <p class="modal-message">등록하시겠습니까?</p>
+    <div class="modal-buttons">
+      <button id="confirmOkBtn" class="confirm-button">확인</button>
+      <button id="confirmCancelBtn" class="cancel-button">취소</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+</script>
 
 </body>
 </html>

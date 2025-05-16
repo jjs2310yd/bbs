@@ -1,16 +1,107 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><title>게시글 보기</title></head>
-<body>
-<h2 th:text="${board.title}"></h2>
-<p>작성자: <span th:text="${board.writer}"></span></p>
-<p>작성일: <span th:text="${board.createdAt}"></span></p>
-<p th:text="${board.content}"></p>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"> <!-- 인코딩 선언 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 반응형 기본 -->
+  <!-- 게시글 제목을 이용해서 페이지 제목 동적 변경 (board 객체가 null이 아니면) -->
+  <title th:text="${board != null} ? ${board.title} + ' - 상세' : '게시글 상세'">게시글 상세</title>
+  <style>
+    /* 간단한 스타일 */
+    body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f4; } /* 배경색 추가 */
+    .container { /* 내용을 감싸는 컨테이너 추가 */
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-width: 800px; /* 최대 너비 설정 */
+        margin: 20px auto; /* 위아래 20px, 좌우 가운데 정렬 */
+    }
+    h2 { margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; } /* 제목 스타일 */
+    .board-meta { margin-bottom: 20px; color: #555; font-size: 0.9em;} /* 작성자/작성일 그룹 */
+    .board-meta span { margin-right: 15px; } /* 정보 간 간격 */
+    .board-detail .content { margin-top: 20px; color: #333; white-space: pre-wrap; /* 내용 줄바꿈 적용 */ line-height: 1.8;} /* 내용 스타일 */
 
-<a th:href="@{'/board/' + ${board.boardId} + '/edit'}">수정</a>
-<form th:action="@{'/board/' + ${board.boardId} + '/delete'}" method="post">
-  <button type="submit">삭제</button>
-</form>
-<a th:href="@{/board}">목록</a>
+    /* ====== 버튼 그룹 스타일 ====== */
+    .button-group {
+        margin-top: 30px; /* 내용과의 간격 */
+        text-align: center; /* 버튼들 가운데 정렬 */
+    }
+    .button-group a, .button-group button {
+        display: inline-block; /* 버튼들을 가로로 나열 */
+        padding: 8px 15px;
+        margin: 0 5px; /* 버튼 사이 간격 */
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background-color 0.3s ease;
+    }
+    .button-group a.edit-button { background-color: #007bff; color: white; } /* 수정 버튼 파란색 */
+    .button-group a.edit-button:hover { background-color: #0056b3; }
+    .button-group button.delete-button { background-color: #dc3545; color: white; } /* 삭제 버튼 빨간색 */
+    .button-group button.delete-button:hover { background-color: #c82333; }
+    .button-group a.list-button { background-color: #6c757d; color: white; } /* 목록 버튼 회색 */
+    .button-group a.list-button:hover { background-color: #5a6268; }
+    /* 삭제 폼은 인라인으로 배치하여 버튼처럼 보이도록 */
+    .delete-form { display: inline-block; margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+
+<!-- 내용을 감싸는 컨테이너 시작 -->
+<div class="container">
+
+  <!-- 게시글 상세 내용 표시 (board 객체가 null이 아닐 때만) -->
+  <div th:if="${board != null}">
+    <!-- 게시글 제목 -->
+    <h2 th:text="${board.title}">게시글 제목</h2>
+
+    <!-- 작성자, 작성일 정보 -->
+    <p class="board-meta">
+      <span>작성자: <span th:text="${board.writer}">작성자</span></span>
+      <span>작성일: <span th:text="${board.createdAt}">2023-01-01</span></span>
+      <!-- updated_at 필드가 있다면 추가 표시 -->
+      <span th:if="${board.updatedAt != null}">수정일: <span th:text="${board.updatedAt}"></span></span>
+    </p>
+
+    <!-- 게시글 내용 -->
+    <div class="content" th:text="${board.content}">게시글 내용입니다.</div>
+  </div>
+
+  <!-- 게시글이 없을 경우 메시지 -->
+  <div th:unless="${board != null}">
+    <p>해당 게시글을 찾을 수 없습니다.</p>
+  </div>
+
+
+  <!-- ====== 버튼 그룹 (수정, 삭제, 목록) ====== -->
+  <!-- 게시글이 있을 때만 수정/삭제 버튼 표시 -->
+  <div class="button-group">
+    <!-- 수정 링크: /board/{id}/edit 주소로 이동 -->
+    <!-- 이 링크를 클릭하면 BoardController의 @GetMapping("/{id}/edit") 메소드가 실행됨 -->
+    <a th:if="${board != null}" th:href="@{'/board/' + ${board.boardId} + '/edit'}" class="edit-button">수정</a>
+
+    <!-- 삭제 폼: POST /board/{id}/delete 요청을 보냄 -->
+    <!-- 이 폼을 제출하면 BoardController의 @PostMapping("/{id}/delete") 메소드가 실행됨 -->
+    <!-- 게시글이 있을 때만 삭제 버튼 표시 -->
+    <form th:if="${board != null}" th:action="@{'/board/' + ${board.boardId} + '/delete'}" method="post" class="delete-form">
+      <button type="submit" class="delete-button" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button> <!-- 삭제 확인 팝업 -->
+    </form>
+
+    <!-- 목록으로 가는 링크 -->
+    <a th:href="@{/board}" class="list-button">목록</a>
+
+    <form th:action="@{/board/search}" method="get" style="text-align:center; margin-bottom:20px;">
+      <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어를 입력하세요" />
+      <button type="submit">검색</button>
+    </form>
+
+  </div>
+
+
+</div>
+
+
 </body>
 </html>

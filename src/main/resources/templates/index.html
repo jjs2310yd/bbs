@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>초기화면</title>
+
+<head>
+  <meta charset="UTF-8">
+  <title>글 작성</title>
+  <style>
+    /* 대충 스타일 좀 넣어볼까요? */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    h2 {
+        color: #333;
+    }
+    form div {
+        margin-bottom: 15px;
+    }
+    label {
+        display: inline-block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    input[type="text"],
+    textarea {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    textarea {
+        resize: vertical; /* 세로 크기만 조절 가능하게 */
+    }
+    button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+       display: flex; gap: 5px;
+
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    a {
+        display: inline-block;
+        margin-top: 20px;
+        color: #007bff;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<h1>게시판</h1>
+<h2>새 글 작성</h2>
+
+<!-- form action 경로를 /boards/add로 설정 -->
+<form th:action="@{/board/addForm}" method="post">
+  <div>
+    <label for="title">제목:</label><br>
+    <input type="text" id="title" name="title" required>
+  </div>
+  <div>
+    <label for="writer">작성자:</label><br>
+    <input type="text" id="writer" name="writer" required>
+  </div>
+  <div>
+    <label for="content">내용:</label><br>
+    <textarea id="content" name="content" rows="10" required></textarea>
+  </div>
+  <div>
+    <button type="submit">글 등록</button>
+    <button type="delete">삭제</button>
+    <button type="reset">수정</button>
+  </div>
+</form>
+
+<a th:href="@{/board}">목록으로 돌아가기</a>
+
+</body>
+</html>
